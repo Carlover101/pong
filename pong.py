@@ -1,3 +1,4 @@
+
 import pygame
 from pygame.locals import QUIT
 import random
@@ -186,15 +187,18 @@ def fun():
         rate_y = -1*rate_y
 
     # Resets everything back to their original values and displays the winner/loser screen
-    def reset(score1,score2):
-        winner(score1,score2)
+    def reset(score1,score2,pad1_y,pad2_y):
+        
+        if score1 == 11 or score2 == 11:
+            winner(score1,score2)
+            score1 = 0
+            score2 = 0
+            pad1_y = center_y-(pad_height/2)
+            pad2_y = pad1_y
+            
         ball_x = (center_x)-4
         ball_y = (center_y)-4
         game_speed = 1
-        score1 = 0
-        score2 = 0
-        pad1_y = center_y-(pad_height/2)
-        pad2_y = pad1_y
         return ball_x,ball_y,game_speed,score1,score2,pad1_y,pad2_y
 
     # Returns the value of the variable true if the ball is touching the given paddle or not
@@ -210,12 +214,8 @@ def fun():
     # This function makes the entire game work
     def move_ball(game_speed,rate_x,rate_y,ball_x,ball_y,paddle1,paddle2,ball,score1,score2,pad1_y,pad2_y):
         
-        # If the ball hits the left or right walls
-        if ball_x <= 1 or (ball_x+8) >= 599:
-            ball_x,ball_y,game_speed,score1,score2,pad1_y,pad2_y = reset(score1,score2)
-            
-            # Not sure why everything freezes if I don't add some recursion
-            move_ball(game_speed,rate_x,rate_y,ball_x,ball_y,paddle1,paddle2,ball,score1,score2,pad1_y,pad2_y)
+        def reset_sequence(game_speed,rate_x,rate_y,ball_x,ball_y,paddle1,paddle2,ball,score1,score2,pad1_y,pad2_y):
+            ball_x,ball_y,game_speed,score1,score2,pad1_y,pad2_y = reset(score1,score2,pad1_y,pad2_y)
             
             # Choose the direction for the ball to go after everything has been reset
             if random.randint(1,2) == 1:
@@ -225,7 +225,20 @@ def fun():
             else:
                 rate_x = 2
                 rate_y = 2
-
+             
+            return game_speed,rate_x,rate_y,ball_x,ball_y,paddle1,paddle2,ball,score1,score2,pad1_y,pad2_y
+        
+        # If the ball hits the left or right walls
+        if ball_x <= 1:
+            score2 += 1
+            game_speed,rate_x,rate_y,ball_x,ball_y,paddle1,paddle2,ball,score1,score2,pad1_y,pad2_y = reset_sequence(game_speed,rate_x,rate_y,ball_x,ball_y,paddle1,paddle2,ball,score1,score2,pad1_y,pad2_y)
+            move_ball(game_speed,rate_x,rate_y,ball_x,ball_y,paddle1,paddle2,ball,score1,score2,pad1_y,pad2_y)
+         
+        elif (ball_x+8) >= 599:
+            score1 += 1
+            game_speed,rate_x,rate_y,ball_x,ball_y,paddle1,paddle2,ball,score1,score2,pad1_y,pad2_y = reset_sequence(game_speed,rate_x,rate_y,ball_x,ball_y,paddle1,paddle2,ball,score1,score2,pad1_y,pad2_y)
+            move_ball(game_speed,rate_x,rate_y,ball_x,ball_y,paddle1,paddle2,ball,score1,score2,pad1_y,pad2_y)
+            
         # If the ball hits walls or the paddles, change movement accordingly
         else:
             if (ball_y) <= 1:
@@ -236,11 +249,9 @@ def fun():
     
             if is_touching(ball_x,ball_y,paddle1) == True:
                 rate_x = -1*rate_x
-                score1 += 1
         
             elif is_touching((ball_x+8),ball_y,paddle2) == True:
                 rate_x = -1*rate_x
-                score2 += 1
         
             ball_x += (game_speed*rate_x)
             ball_y += (game_speed*rate_y)
