@@ -161,7 +161,7 @@ def winner(score1,score2):
         pygame.display.update()
     
 # Get it? "fun" - because it's fun when you have friends
-def fun():
+def fun(smooth):
     
     # Define dimensions and coordinates for all objects
     pygame.display.set_caption("Pong")
@@ -212,7 +212,7 @@ def fun():
         return true
 
     # This function makes the entire game work
-    def move_ball(game_speed,rate_x,rate_y,ball_x,ball_y,paddle1,paddle2,ball,score1,score2,pad1_y,pad2_y):
+    def move_ball(game_speed,rate_x,rate_y,ball_x,ball_y,paddle1,paddle2,ball,score1,score2,pad1_y,pad2_y,clock_speed):
         
         def reset_sequence(game_speed,rate_x,rate_y,ball_x,ball_y,paddle1,paddle2,ball,score1,score2,pad1_y,pad2_y):
             ball_x,ball_y,game_speed,score1,score2,pad1_y,pad2_y = reset(score1,score2,pad1_y,pad2_y)
@@ -232,12 +232,12 @@ def fun():
         if ball_x <= 1:
             score2 += 1
             game_speed,rate_x,rate_y,ball_x,ball_y,paddle1,paddle2,ball,score1,score2,pad1_y,pad2_y = reset_sequence(game_speed,rate_x,rate_y,ball_x,ball_y,paddle1,paddle2,ball,score1,score2,pad1_y,pad2_y)
-            move_ball(game_speed,rate_x,rate_y,ball_x,ball_y,paddle1,paddle2,ball,score1,score2,pad1_y,pad2_y)
+            move_ball(game_speed,rate_x,rate_y,ball_x,ball_y,paddle1,paddle2,ball,score1,score2,pad1_y,pad2_y,clock_speed)
          
         elif (ball_x+8) >= 599:
             score1 += 1
             game_speed,rate_x,rate_y,ball_x,ball_y,paddle1,paddle2,ball,score1,score2,pad1_y,pad2_y = reset_sequence(game_speed,rate_x,rate_y,ball_x,ball_y,paddle1,paddle2,ball,score1,score2,pad1_y,pad2_y)
-            move_ball(game_speed,rate_x,rate_y,ball_x,ball_y,paddle1,paddle2,ball,score1,score2,pad1_y,pad2_y)
+            move_ball(game_speed,rate_x,rate_y,ball_x,ball_y,paddle1,paddle2,ball,score1,score2,pad1_y,pad2_y,clock_speed)
             
         # If the ball hits walls or the paddles, change movement accordingly
         else:
@@ -253,14 +253,20 @@ def fun():
             elif is_touching((ball_x+8),ball_y,paddle2) == True:
                 rate_x = -1*rate_x
         
-            ball_x += (game_speed*rate_x)
-            ball_y += (game_speed*rate_y)
+            ball_x += ((game_speed*rate_x)/(clock_speed/60))
+            ball_y += ((game_speed*rate_y)/(clock_speed/60))
     
         # Return everything that was changed
         return rate_x,rate_y,ball_x,ball_y,game_speed,score1,score2,pad1_y,pad2_y
             
     # count is for game speed; as count increases, so do the game speed
     count = 0
+    if smooth:
+        clock_speed = 600
+    
+    else:
+        clock_speed = 60
+    
     while True:
         
         # If the window isn't focused, run the paused function - In a while loop so that it keeps checking
@@ -275,31 +281,31 @@ def fun():
             if event.type == QUIT:
                 pygame.quit()
             
-            elif event.type == pygame.KEYDOWN:
-                if event.key == pygame.K_UP:
-                    if pad2_y > 0:
-                        pad2_y -= 25
+        keys = pygame.key.get_pressed()
+        if keys[pygame.K_UP]:
+            if pad2_y > 0:
+                pad2_y -= 5/(clock_speed/60)
 
-                if event.key == pygame.K_DOWN:
-                    if pad2_y < (screen.get_height()-pad_height):
-                        pad2_y += 25
+        if keys[pygame.K_DOWN]:
+            if pad2_y < (screen.get_height()-pad_height):
+                pad2_y += 5/(clock_speed/60)
              
-                if event.key == pygame.K_w:
-                    if pad1_y > 0:
-                        pad1_y -= 25
+        if keys[pygame.K_w]:
+            if pad1_y > 0:
+                pad1_y -= 5/(clock_speed/60)
 
-                if event.key == pygame.K_s:
-                    if pad1_y < (screen.get_height()-pad_height):
-                        pad1_y += 25
+        if keys[pygame.K_s]:
+            if pad1_y < (screen.get_height()-pad_height):
+                pad1_y += 5/(clock_speed/60)
             
 
         
         screen.fill("black")
 
         # Increases game_speed with count
-        if count == 25:
+        if count == (25*(clock_speed/60)):
             count = 0
-            game_speed += .01
+            game_speed += .015
         
         # Draw the Pong board, paddles, ball, and score
         top_wall = pygame.draw.rect(screen, "white", (0, 0, 600, 1))
@@ -309,7 +315,7 @@ def fun():
         paddle1 = pygame.draw.rect(screen, "white", (pad1_x, pad1_y, pad_width, pad_height))
         paddle2 = pygame.draw.rect(screen, "white", (pad2_x, pad2_y, pad_width, pad_height))
         ball = pygame.draw.rect(screen, "white", (ball_x, ball_y, 8, 8))
-        rate_x,rate_y,ball_x,ball_y,game_speed,score1,score2,pad1_y,pad2_y=move_ball(game_speed,rate_x,rate_y,ball_x,ball_y,paddle1,paddle2,ball,score1,score2,pad1_y,pad2_y)
+        rate_x,rate_y,ball_x,ball_y,game_speed,score1,score2,pad1_y,pad2_y=move_ball(game_speed,rate_x,rate_y,ball_x,ball_y,paddle1,paddle2,ball,score1,score2,pad1_y,pad2_y,clock_speed)
         scr1 = font.render(str(score1), True, "white")
         scr2 = font.render(str(score2), True, "white")
         textRect = scr1.get_rect()
@@ -326,7 +332,8 @@ def fun():
         pygame.display.update()
 
 # This is the single player version of everything from above (meaning it's simpler). If you have a question about this one, just find the bit of code from above closest to it and read the comments for that code (I'm not writing comments twice).
-def lonely():
+def lonely(smooth):
+    
     pygame.display.set_caption('1 Player Pong')
     pad_width = 10
     pad_height = 55
@@ -362,10 +369,10 @@ def lonely():
 
         return true
 
-    def move_ball(game_speed,rate_x,rate_y,ball_x,ball_y,paddle1,ball,score):
+    def move_ball(game_speed,rate_x,rate_y,ball_x,ball_y,paddle1,ball,score,clock_speed):
         if (ball_x) <= 1:
             ball_x,ball_y,game_speed,score = reset()
-            move_ball(game_speed,rate_x,rate_y,ball_x,ball_y,paddle1,ball,score)
+            move_ball(game_speed,rate_x,rate_y,ball_x,ball_y,paddle1,ball,score,clock_speed)
             if random.randint(1,2) == 1:
                 rate_x = -2
                 rate_y = -2
@@ -388,14 +395,22 @@ def lonely():
                 rate_x = -1*rate_x
                 score += 1
         
-            ball_x += (game_speed*rate_x)
-            ball_y += (game_speed*rate_y)
+            ball_x += ((game_speed*rate_x)/(clock_speed/60))
+            ball_y += ((game_speed*rate_y)/(clock_speed/60))
     
         return rate_x,rate_y,ball_x,ball_y,game_speed,score
             
 
     count = 0
+    clock = pygame.time.Clock()
+    if smooth:
+        clock_speed = 600
+        
+    else:
+        clock_speed = 60
+
     while True:
+        tick = clock.tick(clock_speed)
         if pygame.key.get_focused() == False:
             while pygame.key.get_focused() == False:
                 paused(1)
@@ -405,22 +420,21 @@ def lonely():
             if event.type == QUIT:
                 pygame.quit()
             
-            elif event.type == pygame.KEYDOWN:
-                if event.key == pygame.K_UP:
-                    if pad_y > 0:
-                        pad_y -= 25
+        keys = pygame.key.get_pressed()
+        if keys[pygame.K_UP]:
+            if pad_y > 0:
+                pad_y -= 5/(clock_speed/60)
 
-                if event.key == pygame.K_DOWN:
-                    if pad_y < (screen.get_height()-pad_height):
-                        pad_y += 25
-            
+        if keys[pygame.K_DOWN]:
+            if pad_y < (screen.get_height()-pad_height):
+                pad_y += 5/(clock_speed/60)
 
 
         screen.fill("black")
 
-        if count == 25:
+        if count == (25/(clock_speed/60)):
             count = 0
-            game_speed += .01
+            game_speed += .015
         
         top_wall = pygame.draw.rect(screen, "white", (0, 0, 400, 1))
         right_wall = pygame.draw.rect(screen, "white", (399, 0, 1, 300))
@@ -428,38 +442,39 @@ def lonely():
         left_wall = pygame.draw.rect(screen, "white", (0, 0, 1, 300))
         paddle1 = pygame.draw.rect(screen, "white", (pad_x, pad_y, pad_width, pad_height))
         ball = pygame.draw.rect(screen, "white", (ball_x, ball_y, 8, 8))
-        rate_x,rate_y,ball_x,ball_y,game_speed,score=move_ball(game_speed,rate_x,rate_y,ball_x,ball_y,paddle1,ball,score)
+        rate_x,rate_y,ball_x,ball_y,game_speed,score=move_ball(game_speed,rate_x,rate_y,ball_x,ball_y,paddle1,ball,score,clock_speed)
         text = font.render(str(score), True, "white")
         textRect = text.get_rect()
         textRect.center = (400 // 2, 20)
         screen.blit(text, textRect)
     
-        time.sleep(.02)
-    
-
     
         pygame.display.update()
+    
+    print(count2)
         
 
 display_window = True
 
 # Putting the Tkinter window in a while loop allows the mode-selection window to popup again if pong is closed.
+
 while display_window == True:
     root = Tk()
     root.title("Pong Selection")
+    smooth = IntVar()
 
     # The one_player(), two_players(), and stop_all() functions are so multiple commands can be run by one button-press.
     def one_player():
-        global root
+        global root,smooth
         root.destroy()
         screen_init(1)
-        lonely()
+        lonely(smooth.get())
     
     def two_players():
-        global root
+        global root,smooth
         root.destroy()
         screen_init(2)
-        fun()
+        fun(smooth.get())
     
     def stop_all():
         global root,display_window
@@ -469,12 +484,15 @@ while display_window == True:
     # Defining the window's geometry and placement
     root.geometry(f"300x200+{int((root.winfo_screenwidth()/2)-150)}+{int((root.winfo_screenheight()/2)-125)}")
     
+
+    
     # The text and buttons in the Tkinter windows
     ttk.Label(root, text="Which mode of Pong would you like to play?").place(x=30,y=35)
     ttk.Button(root, text="1 Player", command=one_player).place(x=75,y=90)
     ttk.Button(root, text="2 Players", command=two_players).place(x=155,y=90)
     ttk.Button(root, text="Quit", command=stop_all).place(x=115,y=140)
-    ttk.Label(root, text="Zakkai Thomas | 2023").place(x=2,y=180)
+    ttk.Label(root, text="Zakkai Thomas | 2023").place(x=10,y=180)
+    ttk.Checkbutton(root, text="Smooth Animation", variable=smooth).place(x=170,y=180)
     root.mainloop()
     
 
