@@ -268,7 +268,8 @@ def fun(smooth):
         clock_speed = 60
     
     while True:
-        
+        tick = pygame.time.Clock().tick(clock_speed)
+
         # If the window isn't focused, run the paused function - In a while loop so that it keeps checking
         if pygame.key.get_focused() == False:
             while pygame.key.get_focused() == False:
@@ -324,8 +325,7 @@ def fun(smooth):
         textRect = scr2.get_rect()
         textRect.center = (450, 30)
         screen.blit(scr2, textRect)
-    
-        time.sleep(.02)
+   
     
 
         # Display everything
@@ -333,6 +333,7 @@ def fun(smooth):
 
 # This is the single player version of everything from above (meaning it's simpler). If you have a question about this one, just find the bit of code from above closest to it and read the comments for that code (I'm not writing comments twice).
 def lonely(smooth):
+    print(smooth)
     
     pygame.display.set_caption('1 Player Pong')
     pad_width = 10
@@ -402,7 +403,6 @@ def lonely(smooth):
             
 
     count = 0
-    clock = pygame.time.Clock()
     if smooth:
         clock_speed = 600
         
@@ -410,7 +410,7 @@ def lonely(smooth):
         clock_speed = 60
 
     while True:
-        tick = clock.tick(clock_speed)
+        tick = pygame.time.Clock().tick(clock_speed)
         if pygame.key.get_focused() == False:
             while pygame.key.get_focused() == False:
                 paused(1)
